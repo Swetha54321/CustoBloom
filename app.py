@@ -2,72 +2,54 @@ import streamlit as st
 import pandas as pd
 from sklearn.cluster import KMeans
 
+# Page settings
 st.set_page_config(
     page_title="Smart Customer Segmentation",
     page_icon="🛍️",
     layout="wide"
 )
 
-# ---------------- STYLE ----------------
-
-st.markdown("""
-<style>
-.stApp {
-    background: linear-gradient(135deg, #0f172a, #172554);
-    color: white;
-}
-
-.main-title {
-    font-size: 40px;
-    font-weight: bold;
-    color: #60a5fa;
-}
-
-.card {
-    background: #1e293b;
-    padding: 25px;
-    border-radius: 18px;
-    margin: 10px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-
-# ---------------- LOGIN ----------------
-
+# Login status
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 
-if st.session_state.logged_in == False:
+# =========================
+# LOGIN PAGE
+# =========================
 
-    st.markdown(
-        "<h1 class='main-title'>🛍️ Smart Customer Segmentation</h1>",
-        unsafe_allow_html=True
-    )
+if not st.session_state.logged_in:
+
+    st.title("🛍️ Smart Customer Segmentation")
 
     st.write("Login to manage your customer insights")
 
     username = st.text_input("👤 Username")
-    password = st.text_input("🔒 Password", type="password")
+
+    password = st.text_input(
+        "🔒 Password",
+        type="password"
+    )
 
     if st.button("🚀 Login"):
 
         if username == "admin" and password == "1234":
+
             st.session_state.logged_in = True
             st.rerun()
+
         else:
+
             st.error("❌ Invalid username or password")
 
 
-# ---------------- DASHBOARD ----------------
+# =========================
+# DASHBOARD
+# =========================
 
 else:
 
-    st.markdown(
-        "<h1 class='main-title'>📊 Customer Segmentation Dashboard</h1>",
-        unsafe_allow_html=True
-    )
+    st.title("📊 Customer Segmentation Dashboard")
 
     st.write(
         "Welcome to our Smart Customer Segmentation System! 👋"
@@ -76,33 +58,17 @@ else:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.markdown("""
-        <div class="card">
-        <h2>📁 Upload Dataset</h2>
-        <p>Upload your customer CSV file.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("📁 Upload Dataset")
 
     with col2:
-        st.markdown("""
-        <div class="card">
-        <h2>🎯 Customer Groups</h2>
-        <p>Segment customers using K-Means.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("🎯 Customer Groups")
 
     with col3:
-        st.markdown("""
-        <div class="card">
-        <h2>💡 Smart Offers</h2>
-        <p>Get offers based on customer groups.</p>
-        </div>
-        """, unsafe_allow_html=True)
+        st.info("💡 Smart Offers")
 
     st.markdown("---")
 
-    # ---------------- UPLOAD ----------------
-
+    # Upload CSV
     st.subheader("📂 Upload Customer Dataset")
 
     uploaded_file = st.file_uploader(
@@ -114,7 +80,13 @@ else:
 
         df = pd.read_csv(uploaded_file)
 
-        df.columns = df.columns.str.strip()
+        # Clean column names
+        df.columns = (
+            df.columns
+            .astype(str)
+            .str.strip()
+            .str.replace("\ufeff", "", regex=False)
+        )
 
         st.success("✅ Dataset uploaded successfully!")
 
@@ -127,9 +99,35 @@ else:
 
         st.markdown("---")
 
-        # ---------------- CHECK COLUMNS ----------------
+        # Show columns
+        st.write("Columns found in your CSV:")
 
-        if "Annual Income" in df.columns and "Spending Score" in df.columns:
+        st.write(list(df.columns))
+
+        # Find Annual Income column
+        income_column = None
+
+        for column in df.columns:
+
+            column_name = str(column).lower().strip()
+
+            if "annual" in column_name and "income" in column_name:
+                income_column = column
+
+
+        # Find Spending Score column
+        spending_column = None
+
+        for column in df.columns:
+
+            column_name = str(column).lower().strip()
+
+            if "spending" in column_name and "score" in column_name:
+                spending_column = column
+
+
+        # Check columns
+        if income_column is not None and spending_column is not None:
 
             st.subheader("🎯 Customer Segmentation")
 
@@ -139,24 +137,25 @@ else:
             ):
 
                 income = pd.to_numeric(
-                    df["Annual Income"],
+                    df[income_column],
                     errors="coerce"
                 )
 
                 spending = pd.to_numeric(
-                    df["Spending Score"],
+                    df[spending_column],
                     errors="coerce"
                 )
 
                 data = pd.DataFrame({
-                    "Annual Income": income,
-                    "Spending Score": spending
+                    "Income": income,
+                    "Spending": spending
                 })
 
                 data = data.dropna()
 
                 if len(data) >= 4:
 
+                    # K-Means
                     model = KMeans(
                         n_clusters=4,
                         random_state=42,
@@ -165,6 +164,7 @@ else:
 
                     groups = model.fit_predict(data)
 
+                    # Add groups
                     df["Customer Group"] = "Not Available"
 
                     df.loc[
@@ -183,32 +183,36 @@ else:
                         use_container_width=True
                     )
 
-                    st.subheader("📊 Group Summary")
+                    # Group summary
+                    st.subheader("📊 Customer Group Summary")
 
-                    group_count = df[
-                        "Customer Group"
-                    ].value_counts().sort_index()
+                    group_count = (
+                        df["Customer Group"]
+                        .value_counts()
+                        .sort_index()
+                    )
 
                     st.bar_chart(group_count)
 
+                    # Smart offers
                     st.markdown("---")
 
                     st.subheader("💡 Smart Offers")
 
                     st.info(
-                        "🎯 Group 1: Special discount offers"
+                        "🎯 Group 1 – Special discount offers"
                     )
 
                     st.info(
-                        "💎 Group 2: Premium product offers"
+                        "💎 Group 2 – Premium product offers"
                     )
 
                     st.info(
-                        "🛍️ Group 3: Personalized offers"
+                        "🛍️ Group 3 – Personalized offers"
                     )
 
                     st.info(
-                        "🌟 Group 4: Loyalty and new-product offers"
+                        "🌟 Group 4 – Loyalty and new-product offers"
                     )
 
                 else:
@@ -220,13 +224,11 @@ else:
         else:
 
             st.error(
-                "❌ Annual Income or Spending Score column is missing."
+                "❌ Required columns could not be identified."
             )
 
-            st.write("Columns found in your CSV:")
 
-            st.write(list(df.columns))
-
+    # Logout
     st.markdown("---")
 
     if st.button("🚪 Logout"):
