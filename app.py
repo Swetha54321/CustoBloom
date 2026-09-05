@@ -1,8 +1,10 @@
 import streamlit as st
+import pandas as pd
+from sklearn.cluster import KMeans
 
 # ---------------- PAGE SETTINGS ----------------
 st.set_page_config(
-    page_title="Customer Segmentation",
+    page_title="Smart Customer Segmentation",
     page_icon="🛍️",
     layout="wide"
 )
@@ -13,15 +15,6 @@ st.markdown("""
 .stApp {
     background: linear-gradient(135deg, #0f172a, #172554);
     color: white;
-}
-
-.login-box {
-    background: rgba(30, 41, 59, 0.95);
-    padding: 40px;
-    border-radius: 20px;
-    max-width: 450px;
-    margin: 80px auto;
-    box-shadow: 0px 10px 40px rgba(0,0,0,0.4);
 }
 
 .title {
@@ -54,21 +47,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ---------------- LOGIN PAGE ----------------
+# ---------------- LOGIN STATUS ----------------
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 
+# ==================================================
+# LOGIN PAGE
+# ==================================================
+
 if not st.session_state.logged_in:
 
-    st.markdown("""
-    <div class="login-box">
-        <div class="title">🛍️ Smart Customer Segmentation</div>
-        <div class="subtitle">
-            Login to manage your customer insights
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown(
+        '<div class="title">🛍️ Smart Customer Segmentation</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="subtitle">Login to manage your customer insights</div>',
+        unsafe_allow_html=True
+    )
 
     username = st.text_input("👤 Username")
     password = st.text_input("🔒 Password", type="password")
@@ -78,12 +76,14 @@ if not st.session_state.logged_in:
         if username == "admin" and password == "1234":
             st.session_state.logged_in = True
             st.rerun()
-
         else:
             st.error("❌ Invalid username or password")
 
 
-# ---------------- DASHBOARD ----------------
+# ==================================================
+# DASHBOARD
+# ==================================================
+
 else:
 
     st.markdown(
@@ -91,7 +91,7 @@ else:
         unsafe_allow_html=True
     )
 
-    st.write("Welcome to your Smart Customer Segmentation System! 👋")
+    st.write("Welcome to our Smart Customer Segmentation System! 👋")
 
     col1, col2, col3 = st.columns(3)
 
@@ -121,6 +121,8 @@ else:
 
     st.markdown("---")
 
+    # ---------------- UPLOAD DATASET ----------------
+
     st.subheader("📂 Upload Customer Dataset")
 
     uploaded_file = st.file_uploader(
@@ -129,14 +131,52 @@ else:
     )
 
     if uploaded_file is not None:
-        st.success("✅ Dataset uploaded successfully!")
-
-        import pandas as pd
 
         df = pd.read_csv(uploaded_file)
 
+        st.success("✅ Dataset uploaded successfully!")
+
         st.subheader("👀 Dataset Preview")
         st.dataframe(df)
+
+        # ---------------- K-MEANS ----------------
+
+        st.markdown("---")
+
+        st.subheader("🎯 Customer Segmentation")
+
+        if st.button(
+            "🚀 Run Customer Segmentation",
+            use_container_width=True
+        ):
+
+            # Select columns for K-Means
+            X = df[["Annual Income", "Spending Score"]]
+
+            # Create K-Means model
+            kmeans = KMeans(
+                n_clusters=4,
+                random_state=42,
+                n_init=10
+            )
+
+            # Predict customer groups
+            df["Customer Group"] = kmeans.fit_predict(X) + 1
+
+            st.success(
+                "🎉 Customer segmentation completed successfully!"
+            )
+
+            st.subheader("👥 Customer Groups")
+
+            st.dataframe(df)
+
+            st.info(
+                "Customers have been divided into 4 groups "
+                "based on Annual Income and Spending Score."
+            )
+
+    # ---------------- LOGOUT ----------------
 
     st.markdown("---")
 
