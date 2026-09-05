@@ -2,14 +2,14 @@ import streamlit as st
 import pandas as pd
 from sklearn.cluster import KMeans
 
-# PAGE SETTINGS
 st.set_page_config(
     page_title="Smart Customer Segmentation",
     page_icon="🛍️",
     layout="wide"
 )
 
-# STYLE
+# ---------------- STYLE ----------------
+
 st.markdown("""
 <style>
 .stApp {
@@ -17,87 +17,55 @@ st.markdown("""
     color: white;
 }
 
-.title {
-    text-align: center;
-    font-size: 38px;
-    font-weight: bold;
-    color: #60a5fa;
-}
-
-.subtitle {
-    text-align: center;
-    color: #cbd5e1;
-    font-size: 18px;
-    margin-bottom: 30px;
-}
-
-.dashboard-title {
+.main-title {
     font-size: 40px;
     font-weight: bold;
     color: #60a5fa;
 }
 
 .card {
-    background: rgba(30, 41, 59, 0.9);
+    background: #1e293b;
     padding: 25px;
     border-radius: 18px;
-    margin-top: 20px;
-    border: 1px solid #334155;
+    margin: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
 
 
-# LOGIN STATUS
+# ---------------- LOGIN ----------------
+
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 
-# =========================
-# LOGIN PAGE
-# =========================
-
-if not st.session_state.logged_in:
+if st.session_state.logged_in == False:
 
     st.markdown(
-        '<div class="title">🛍️ Smart Customer Segmentation</div>',
+        "<h1 class='main-title'>🛍️ Smart Customer Segmentation</h1>",
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        '<div class="subtitle">Login to manage your customer insights</div>',
-        unsafe_allow_html=True
-    )
+    st.write("Login to manage your customer insights")
 
     username = st.text_input("👤 Username")
+    password = st.text_input("🔒 Password", type="password")
 
-    password = st.text_input(
-        "🔒 Password",
-        type="password"
-    )
-
-    if st.button("🚀 Login", use_container_width=True):
+    if st.button("🚀 Login"):
 
         if username == "admin" and password == "1234":
-
             st.session_state.logged_in = True
             st.rerun()
-
         else:
-
             st.error("❌ Invalid username or password")
 
 
-# =========================
-# DASHBOARD
-# =========================
+# ---------------- DASHBOARD ----------------
 
 else:
 
     st.markdown(
-        '<div class="dashboard-title">'
-        '📊 Customer Segmentation Dashboard'
-        '</div>',
+        "<h1 class='main-title'>📊 Customer Segmentation Dashboard</h1>",
         unsafe_allow_html=True
     )
 
@@ -105,13 +73,9 @@ else:
         "Welcome to our Smart Customer Segmentation System! 👋"
     )
 
-
-    # DASHBOARD CARDS
-
     col1, col2, col3 = st.columns(3)
 
     with col1:
-
         st.markdown("""
         <div class="card">
         <h2>📁 Upload Dataset</h2>
@@ -119,9 +83,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-
     with col2:
-
         st.markdown("""
         <div class="card">
         <h2>🎯 Customer Groups</h2>
@@ -129,9 +91,7 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-
     with col3:
-
         st.markdown("""
         <div class="card">
         <h2>💡 Smart Offers</h2>
@@ -139,13 +99,9 @@ else:
         </div>
         """, unsafe_allow_html=True)
 
-
     st.markdown("---")
 
-
-    # =========================
-    # UPLOAD DATASET
-    # =========================
+    # ---------------- UPLOAD ----------------
 
     st.subheader("📂 Upload Customer Dataset")
 
@@ -154,170 +110,127 @@ else:
         type=["csv"]
     )
 
-
     if uploaded_file is not None:
 
-        try:
+        df = pd.read_csv(uploaded_file)
 
-            df = pd.read_csv(uploaded_file)
+        df.columns = df.columns.str.strip()
 
-            # Remove extra spaces from column names
-            df.columns = df.columns.str.strip()
+        st.success("✅ Dataset uploaded successfully!")
 
-            st.success(
-                "✅ Dataset uploaded successfully!"
-            )
+        st.subheader("👀 Dataset Preview")
 
+        st.dataframe(
+            df,
+            use_container_width=True
+        )
 
-            # DATA PREVIEW
+        st.markdown("---")
 
-            st.subheader("👀 Dataset Preview")
+        # ---------------- CHECK COLUMNS ----------------
 
-            st.dataframe(
-                df,
-                use_container_width=True
-            )
-
-
-            # =========================
-            # SEGMENTATION
-            # =========================
-
-            st.markdown("---")
+        if "Annual Income" in df.columns and "Spending Score" in df.columns:
 
             st.subheader("🎯 Customer Segmentation")
 
+            if st.button(
+                "🚀 Run Customer Segmentation",
+                use_container_width=True
+            ):
 
-            # Check columns
-
-            required_columns = [
-                "Annual Income",
-                "Spending Score"
-            ]
-
-
-            missing_columns = [
-                column
-                for column in required_columns
-                if column not in df.columns
-            ]
-
-
-            if len(missing_columns) > 0:
-
-                st.error(
-                    "❌ Required columns are missing."
+                income = pd.to_numeric(
+                    df["Annual Income"],
+                    errors="coerce"
                 )
 
-                st.write(
-                    "Columns found in your dataset:"
+                spending = pd.to_numeric(
+                    df["Spending Score"],
+                    errors="coerce"
                 )
 
-                st.write(
-                    list(df.columns)
-                )
+                data = pd.DataFrame({
+                    "Annual Income": income,
+                    "Spending Score": spending
+                })
 
+                data = data.dropna()
 
-            else:
+                if len(data) >= 4:
 
-                if st.button(
-                    "🚀 Run Customer Segmentation",
-                    use_container_width=True
-                ):
-
-                    # Select features
-
-                    X = df[
-                        [
-                            "Annual Income",
-                            "Spending Score"
-                        ]
-                    ].copy()
-
-
-                    # Convert values to numbers
-
-                    X["Annual Income"] = pd.to_numeric(
-                        X["Annual Income"],
-                        errors="coerce"
+                    model = KMeans(
+                        n_clusters=4,
+                        random_state=42,
+                        n_init=10
                     )
 
-                    X["Spending Score"] = pd.to_numeric(
-                        X["Spending Score"],
-                        errors="coerce"
+                    groups = model.fit_predict(data)
+
+                    df["Customer Group"] = "Not Available"
+
+                    df.loc[
+                        data.index,
+                        "Customer Group"
+                    ] = groups + 1
+
+                    st.success(
+                        "🎉 Customer segmentation completed successfully!"
                     )
 
+                    st.subheader("👥 Customer Groups")
 
-                    # Remove empty values
+                    st.dataframe(
+                        df,
+                        use_container_width=True
+                    )
 
-                    valid_rows = X.dropna().index
+                    st.subheader("📊 Group Summary")
 
-                    X_clean = X.loc[valid_rows]
+                    group_count = df[
+                        "Customer Group"
+                    ].value_counts().sort_index()
 
+                    st.bar_chart(group_count)
 
-                    if len(X_clean) < 4:
+                    st.markdown("---")
 
-                        st.error(
-                            "❌ Not enough valid customer data "
-                            "to create 4 groups."
-                        )
+                    st.subheader("💡 Smart Offers")
 
-                    else:
+                    st.info(
+                        "🎯 Group 1: Special discount offers"
+                    )
 
-                        # K-MEANS MODEL
+                    st.info(
+                        "💎 Group 2: Premium product offers"
+                    )
 
-                        kmeans = KMeans(
-                            n_clusters=4,
-                            random_state=42,
-                            n_init=10
-                        )
+                    st.info(
+                        "🛍️ Group 3: Personalized offers"
+                    )
 
+                    st.info(
+                        "🌟 Group 4: Loyalty and new-product offers"
+                    )
 
-                        # Create groups
+                else:
 
-                        groups = kmeans.fit_predict(
-                            X_clean
-                        ) + 1
+                    st.error(
+                        "❌ Not enough valid customer data."
+                    )
 
+        else:
 
-                        # Add groups to original dataframe
+            st.error(
+                "❌ Annual Income or Spending Score column is missing."
+            )
 
-                        df["Customer Group"] = "Not Available"
+            st.write("Columns found in your CSV:")
 
-                        df.loc[
-                            valid_rows,
-                            "Customer Group"
-                        ] = groups
+            st.write(list(df.columns))
 
+    st.markdown("---")
 
-                        st.success(
-                            "🎉 Customer segmentation "
-                            "completed successfully!"
-                        )
+    if st.button("🚪 Logout"):
 
+        st.session_state.logged_in = False
 
-                        # SHOW GROUPS
-
-                        st.subheader(
-                            "👥 Customer Groups"
-                        )
-
-                        st.dataframe(
-                            df,
-                            use_container_width=True
-                        )
-
-
-                        # GROUP COUNT
-
-                        st.subheader(
-                            "📊 Group Summary"
-                        )
-
-                        group_counts = (
-                            df["Customer Group"]
-                            .value_counts()
-                            .sort_index()
-                        )
-
-                        st.bar_chart
+        st.rerun()
