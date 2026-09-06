@@ -5,14 +5,22 @@ import sqlite3
 import hashlib
 import re
 
-# PAGE SETTINGS
+# =========================================================
+# PAGE CONFIGURATION
+# =========================================================
+
 st.set_page_config(
     page_title="Smart Customer Segmentation",
     page_icon="🛍️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
+
+# =========================================================
 # DATABASE
+# =========================================================
+
 def get_database():
     conn = sqlite3.connect("users.db")
     cursor = conn.cursor()
@@ -34,20 +42,17 @@ def get_database():
     return conn
 
 
-# PASSWORD HASH
 def hash_password(password):
     return hashlib.sha256(
         password.encode("utf-8")
     ).hexdigest()
 
 
-# EMAIL CHECK
 def valid_email(email):
     pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
     return re.match(pattern, email) is not None
 
 
-# CREATE ACCOUNT
 def create_account(username, email, password):
     conn = get_database()
     cursor = conn.cursor()
@@ -57,7 +62,9 @@ def create_account(username, email, password):
         (username,)
     )
 
-    if cursor.fetchone() is not None:
+    existing = cursor.fetchone()
+
+    if existing:
         conn.close()
         return False
 
@@ -77,7 +84,6 @@ def create_account(username, email, password):
     return True
 
 
-# LOGIN
 def login_user(username, password):
     conn = get_database()
     cursor = conn.cursor()
@@ -101,181 +107,308 @@ def login_user(username, password):
 get_database().close()
 
 
+# =========================================================
 # SESSION
+# =========================================================
+
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 
 
-# ---------------------------------------------------------
-# DESIGN
-# ---------------------------------------------------------
+# =========================================================
+# CUSTOM DESIGN
+# =========================================================
 
 st.markdown(
     """
     <style>
 
+    /* ---------- BACKGROUND ---------- */
+
     .stApp {
-        background: linear-gradient(
-            135deg,
-            #ffd1e8,
-            #ffe6f2,
-            #fff5fa
-        );
-        color: #111111;
+        background:
+            radial-gradient(
+                circle at top right,
+                #ff8fbd 0%,
+                transparent 35%
+            ),
+            linear-gradient(
+                135deg,
+                #f06a9b 0%,
+                #f78fb9 45%,
+                #ffd0e1 100%
+            );
     }
+
+
+    /* ---------- MAIN CONTAINER ---------- */
 
     .block-container {
-        padding-top: 2rem;
-        padding-bottom: 3rem;
-        max-width: 1200px;
+        max-width: 1150px;
+        padding-top: 3rem;
+        padding-bottom: 4rem;
     }
 
-    h1 {
-        color: #111111 !important;
-        font-size: 42px !important;
-        font-weight: 900 !important;
-    }
 
-    h2 {
-        color: #111111 !important;
-        font-size: 32px !important;
-        font-weight: 800 !important;
-    }
+    /* ---------- HERO TITLE ---------- */
 
-    h3 {
-        color: #111111 !important;
-        font-size: 25px !important;
-        font-weight: 700 !important;
-    }
-
-    p {
-        color: #111111 !important;
-        font-size: 19px !important;
-    }
-
-    .title {
+    .hero {
         text-align: center;
-        font-size: 46px;
-        font-weight: 900;
+        padding: 25px 10px 20px 10px;
+    }
+
+    .hero-small {
+        display: inline-block;
+        background: #111111;
+        color: #ffffff;
+        padding: 8px 18px;
+        border-radius: 30px;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 15px;
+    }
+
+    .hero-title {
         color: #111111;
-        line-height: 1.2;
+        font-size: 52px;
+        line-height: 1.05;
+        font-weight: 900;
+        margin: 5px 0;
     }
 
-    .subtitle {
-        text-align: center;
-        font-size: 21px;
+    .hero-subtitle {
+        color: #24151c;
+        font-size: 20px;
         font-weight: 600;
-        color: #222222;
+        margin-top: 15px;
     }
 
-    .card {
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 20px;
-        border: 2px solid #111111;
+
+    /* ---------- WHITE PANELS ---------- */
+
+    .panel {
+        background: rgba(255,255,255,0.96);
+        border-radius: 24px;
+        padding: 32px;
+        margin-top: 20px;
         margin-bottom: 20px;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.12);
+        border: 1px solid rgba(17,17,17,0.12);
+        box-shadow:
+            0 18px 45px rgba(50,20,35,0.18);
     }
 
-    .offer {
-        background: #ffffff;
-        padding: 25px;
-        border-radius: 20px;
-        border: 2px solid #111111;
-        margin-bottom: 20px;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.12);
+
+    /* ---------- LOGIN HEADER ---------- */
+
+    .login-heading {
+        text-align: center;
+        color: #111111;
+        font-size: 30px;
+        font-weight: 850;
+        margin-bottom: 5px;
     }
+
+    .login-description {
+        text-align: center;
+        color: #555555;
+        font-size: 17px;
+        margin-bottom: 20px;
+    }
+
+
+    /* ---------- FEATURE CARDS ---------- */
+
+    .feature-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 25px;
+        min-height: 175px;
+        border: 1px solid #eeeeee;
+        box-shadow:
+            0 12px 30px rgba(40,20,30,0.12);
+    }
+
+    .feature-icon {
+        font-size: 35px;
+        margin-bottom: 8px;
+    }
+
+    .feature-title {
+        color: #111111;
+        font-size: 22px;
+        font-weight: 800;
+    }
+
+    .feature-text {
+        color: #555555;
+        font-size: 16px;
+        line-height: 1.5;
+    }
+
+
+    /* ---------- OFFER CARDS ---------- */
+
+    .offer-card {
+        background: #ffffff;
+        border-radius: 20px;
+        padding: 25px;
+        margin: 15px 0;
+        border-left: 7px solid #e83e8c;
+        box-shadow:
+            0 10px 28px rgba(40,20,30,0.12);
+    }
+
+    .offer-title {
+        color: #111111;
+        font-size: 24px;
+        font-weight: 850;
+        margin-bottom: 8px;
+    }
+
+    .offer-text {
+        color: #333333;
+        font-size: 17px;
+        line-height: 1.6;
+    }
+
+
+    /* ---------- BUTTONS ---------- */
 
     .stButton > button {
-        width: 100%;
-        min-height: 58px;
-        border-radius: 15px;
+        min-height: 55px;
+        border-radius: 13px;
         background: #111111;
         color: #ffffff;
-        border: 2px solid #111111;
-        font-size: 19px;
-        font-weight: 700;
+        border: 1px solid #111111;
+        font-size: 17px;
+        font-weight: 750;
+        transition: 0.2s;
     }
 
+    .stButton > button:hover {
+        background: #e83e8c;
+        border-color: #e83e8c;
+        color: #ffffff;
+    }
+
+
     .stDownloadButton > button {
-        width: 100%;
-        min-height: 58px;
-        border-radius: 15px;
+        min-height: 55px;
+        border-radius: 13px;
         background: #111111;
         color: #ffffff;
-        border: 2px solid #111111;
-        font-size: 19px;
-        font-weight: 700;
+        font-size: 17px;
+        font-weight: 750;
     }
+
+
+    /* ---------- INPUTS ---------- */
 
     .stTextInput input {
         min-height: 52px;
         border-radius: 12px;
-        border: 2px solid #111111;
+        border: 1px solid #cccccc;
         background: #ffffff;
         color: #111111;
-        font-size: 18px;
+        font-size: 17px;
     }
+
+
+    /* ---------- TABS ---------- */
+
+    button[data-baseweb="tab"] {
+        font-size: 18px !important;
+        font-weight: 750 !important;
+        color: #333333 !important;
+        padding: 15px 25px !important;
+    }
+
+
+    /* ---------- FILE UPLOADER ---------- */
 
     [data-testid="stFileUploader"] {
         background: #ffffff;
         padding: 20px;
         border-radius: 18px;
-        border: 2px solid #111111;
+        border: 1px solid #dddddd;
     }
+
+
+    /* ---------- MOBILE ---------- */
 
     @media (max-width: 768px) {
 
         .block-container {
-            padding-left: 0.8rem;
-            padding-right: 0.8rem;
+            padding: 1.2rem 0.8rem 3rem 0.8rem;
         }
 
-        .title {
-            font-size: 32px;
+        .hero {
+            padding-top: 10px;
         }
 
-        .subtitle {
-            font-size: 18px;
+        .hero-title {
+            font-size: 34px;
         }
 
-        h1 {
-            font-size: 30px !important;
+        .hero-subtitle {
+            font-size: 17px;
         }
 
-        h2 {
-            font-size: 26px !important;
+        .hero-small {
+            font-size: 12px;
+            padding: 7px 14px;
         }
 
-        h3 {
-            font-size: 22px !important;
+        .panel {
+            padding: 20px 16px;
+            border-radius: 20px;
         }
 
-        p {
-            font-size: 17px !important;
+        .login-heading {
+            font-size: 26px;
         }
 
-        .card {
-            padding: 18px;
+        .feature-card {
+            min-height: auto;
+            padding: 20px;
+            margin-bottom: 10px;
         }
 
-        .offer {
-            padding: 18px;
+        .feature-title {
+            font-size: 20px;
+        }
+
+        .offer-card {
+            padding: 20px;
+        }
+
+        .offer-title {
+            font-size: 21px;
+        }
+
+        .offer-text {
+            font-size: 16px;
         }
 
         .stButton > button {
-            min-height: 62px;
-            font-size: 18px;
+            min-height: 58px;
+            font-size: 17px;
         }
 
         .stDownloadButton > button {
-            min-height: 62px;
-            font-size: 18px;
+            min-height: 58px;
         }
 
         .stTextInput input {
-            min-height: 56px;
-            font-size: 18px;
+            min-height: 55px;
+            font-size: 17px;
+        }
+
+        button[data-baseweb="tab"] {
+            font-size: 16px !important;
+            padding: 12px 10px !important;
         }
     }
 
@@ -286,117 +419,158 @@ st.markdown(
 
 
 # =========================================================
-# LOGIN PAGE
+# LOGIN / SIGNUP
 # =========================================================
 
 if not st.session_state.logged_in:
 
     st.markdown(
-        "<div class='title'>🛍️ Smart Customer Segmentation</div>",
+        """
+        <div class="hero">
+
+            <div class="hero-small">
+                CUSTOMER INTELLIGENCE PLATFORM
+            </div>
+
+            <div class="hero-title">
+                Smart Customer<br>
+                Segmentation
+            </div>
+
+            <div class="hero-subtitle">
+                Turn customer data into meaningful business insights.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+    st.markdown(
+        '<div class="panel">',
         unsafe_allow_html=True
     )
 
     st.markdown(
-        "<div class='subtitle'>"
-        "Turn customer data into smart business decisions 💡"
-        "</div>",
+        """
+        <div class="login-heading">
+            Welcome
+        </div>
+
+        <div class="login-description">
+            Sign in to analyse customers and discover valuable segments.
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    st.markdown("---")
 
     login_tab, signup_tab = st.tabs(
-        ["🔐 Login", "📝 Create Account"]
+        [
+            "🔐  LOGIN",
+            "✨  CREATE ACCOUNT"
+        ]
     )
 
-    # LOGIN TAB
+
+    # LOGIN
     with login_tab:
 
-        st.markdown(
-            """
-            <div class="card">
-            <h2>🔐 Login to Dashboard</h2>
-            <p>Enter your account details to continue.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown("<br>", unsafe_allow_html=True)
 
-        login_username = st.text_input(
-            "👤 Username",
+        username = st.text_input(
+            "Username",
+            placeholder="Enter your username",
             key="login_username"
         )
 
-        login_password = st.text_input(
-            "🔒 Password",
+        password = st.text_input(
+            "Password",
             type="password",
+            placeholder="Enter your password",
             key="login_password"
         )
 
+        st.markdown("<br>", unsafe_allow_html=True)
+
         login_clicked = st.button(
-            "🚀 Login",
-            key="login_button"
+            "SIGN IN  →",
+            key="login_button",
+            use_container_width=True
         )
 
         if login_clicked:
 
-            if not login_username.strip():
-                st.warning("⚠️ Please enter username.")
+            if not username.strip():
 
-            elif not login_password:
-                st.warning("⚠️ Please enter password.")
+                st.warning(
+                    "Please enter your username."
+                )
+
+            elif not password:
+
+                st.warning(
+                    "Please enter your password."
+                )
 
             elif login_user(
-                login_username.strip(),
-                login_password
+                username.strip(),
+                password
             ):
 
                 st.session_state.logged_in = True
-                st.success("✅ Login successful!")
+
+                st.success(
+                    "Login successful!"
+                )
+
                 st.rerun()
 
             else:
-                st.error("❌ Invalid username or password.")
+
+                st.error(
+                    "Invalid username or password."
+                )
 
 
-    # CREATE ACCOUNT TAB
+    # CREATE ACCOUNT
     with signup_tab:
 
-        st.markdown(
-            """
-            <div class="card">
-            <h2>📝 Create New Account</h2>
-            <p>Create an account to use the dashboard.</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.markdown("<br>", unsafe_allow_html=True)
 
         new_username = st.text_input(
-            "👤 Create Username",
-            key="create_username"
+            "Username",
+            placeholder="Choose a username",
+            key="signup_username"
         )
 
         new_email = st.text_input(
-            "📧 Email Address",
-            key="create_email"
+            "Email",
+            placeholder="Enter your email address",
+            key="signup_email"
         )
 
         new_password = st.text_input(
-            "🔒 Create Password",
+            "Password",
             type="password",
-            key="create_password"
+            placeholder="Create a password",
+            key="signup_password"
         )
 
         confirm_password = st.text_input(
-            "🔒 Confirm Password",
+            "Confirm Password",
             type="password",
-            key="confirm_password"
+            placeholder="Confirm your password",
+            key="signup_confirm"
         )
 
+        st.markdown("<br>", unsafe_allow_html=True)
+
         signup_clicked = st.button(
-            "✨ Create Account",
-            key="create_account_button"
+            "CREATE ACCOUNT  →",
+            key="signup_button",
+            use_container_width=True
         )
 
         if signup_clicked:
@@ -405,41 +579,70 @@ if not st.session_state.logged_in:
             email = new_email.strip()
 
             if not username:
-                st.warning("⚠️ Please enter username.")
+
+                st.warning(
+                    "Please enter a username."
+                )
 
             elif not email:
-                st.warning("⚠️ Please enter email.")
+
+                st.warning(
+                    "Please enter an email address."
+                )
 
             elif not valid_email(email):
-                st.error("❌ Please enter a valid email.")
+
+                st.error(
+                    "Please enter a valid email address."
+                )
 
             elif not new_password:
-                st.warning("⚠️ Please create a password.")
+
+                st.warning(
+                    "Please create a password."
+                )
 
             elif len(new_password) < 4:
+
                 st.warning(
-                    "⚠️ Password must contain at least 4 characters."
+                    "Password must contain at least 4 characters."
                 )
 
             elif new_password != confirm_password:
-                st.error("❌ Passwords do not match.")
 
-            elif create_account(
-                username,
-                email,
-                new_password
-            ):
-
-                st.success(
-                    "🎉 Account created successfully!"
-                )
-
-                st.info(
-                    "Open the Login tab and login with your new account."
+                st.error(
+                    "Passwords do not match."
                 )
 
             else:
-                st.error("❌ Username already exists.")
+
+                created = create_account(
+                    username,
+                    email,
+                    new_password
+                )
+
+                if created:
+
+                    st.success(
+                        "Account created successfully!"
+                    )
+
+                    st.info(
+                        "Now open LOGIN and sign in."
+                    )
+
+                else:
+
+                    st.error(
+                        "Username already exists."
+                    )
+
+
+    st.markdown(
+        "</div>",
+        unsafe_allow_html=True
+    )
 
 
 # =========================================================
@@ -449,18 +652,27 @@ if not st.session_state.logged_in:
 if st.session_state.logged_in:
 
     st.markdown(
-        "<div class='title'>📊 Customer Segmentation Dashboard</div>",
+        """
+        <div class="hero">
+
+            <div class="hero-small">
+                CUSTOMER ANALYTICS
+            </div>
+
+            <div class="hero-title">
+                Smart Customer<br>
+                Segmentation
+            </div>
+
+            <div class="hero-subtitle">
+                Understand your customers. Discover your segments.
+            </div>
+
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    st.markdown(
-        "<div class='subtitle'>"
-        "Welcome to your Smart Customer Segmentation System! 👋"
-        "</div>",
-        unsafe_allow_html=True
-    )
-
-    st.markdown("---")
 
     # FEATURE CARDS
 
@@ -470,68 +682,97 @@ if st.session_state.logged_in:
 
         st.markdown(
             """
-            <div class="card">
-            <h2>📁 Upload Dataset</h2>
-            <p>
-            Upload your customer CSV data
-            for analysis.
-            </p>
+            <div class="feature-card">
+                <div class="feature-icon">📁</div>
+                <div class="feature-title">
+                    Upload Data
+                </div>
+                <div class="feature-text">
+                    Upload your customer CSV
+                    and start analysing your data.
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
+
 
     with col2:
 
         st.markdown(
             """
-            <div class="card">
-            <h2>🎯 K-Means Groups</h2>
-            <p>
-            Automatically divide customers
-            into four groups.
-            </p>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">
+                    Customer Groups
+                </div>
+                <div class="feature-text">
+                    K-Means automatically discovers
+                    four customer segments.
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
+
 
     with col3:
 
         st.markdown(
             """
-            <div class="card">
-            <h2>🤖 Smart Offers</h2>
-            <p>
-            Get marketing ideas for
-            different customer groups.
-            </p>
+            <div class="feature-card">
+                <div class="feature-icon">💡</div>
+                <div class="feature-title">
+                    Smart Insights
+                </div>
+                <div class="feature-text">
+                    Get useful marketing ideas
+                    for each customer group.
+                </div>
             </div>
             """,
             unsafe_allow_html=True
         )
 
-    st.markdown("---")
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
 
     # UPLOAD
 
-    st.subheader("📂 Upload Customer Dataset")
+    st.markdown(
+        """
+        <div class="panel">
+        <h2>📂 Upload Customer Dataset</h2>
+        <p>
+        Upload a CSV containing customer information.
+        </p>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 
     uploaded_file = st.file_uploader(
-        "Choose a CSV file",
+        "Choose CSV file",
         type=["csv"]
     )
+
 
     if uploaded_file is None:
 
         st.info(
-            "👆 Please upload your customer CSV file."
+            "Upload your CSV file above to begin."
         )
+
 
     if uploaded_file is not None:
 
         try:
-            df = pd.read_csv(uploaded_file)
+
+            df = pd.read_csv(
+                uploaded_file
+            )
 
             df.columns = (
                 df.columns
@@ -549,27 +790,28 @@ if st.session_state.logged_in:
         except Exception as error:
 
             st.error(
-                "❌ Could not read the CSV file."
+                "Unable to read the CSV file."
             )
 
             st.write(str(error))
 
             st.stop()
 
+
         st.success(
-            "✅ Dataset uploaded successfully!"
+            "Dataset uploaded successfully!"
         )
 
-        # PREVIEW
 
-        st.subheader("👀 Dataset Preview")
+        st.subheader(
+            "👀 Dataset Preview"
+        )
 
         st.dataframe(
             df,
             use_container_width=True
         )
 
-        st.markdown("---")
 
         # FIND COLUMNS
 
@@ -578,25 +820,26 @@ if st.session_state.logged_in:
 
         for column in df.columns:
 
-            column_name = (
+            name = (
                 str(column)
                 .lower()
                 .strip()
             )
 
             if (
-                "annual" in column_name
-                and "income" in column_name
+                "annual" in name
+                and "income" in name
             ):
+
                 income_column = column
 
             if (
-                "spending" in column_name
-                and "score" in column_name
+                "spending" in name
+                and "score" in name
             ):
+
                 spending_column = column
 
-        # COLUMN CHECK
 
         if (
             income_column is None
@@ -604,37 +847,36 @@ if st.session_state.logged_in:
         ):
 
             st.error(
-                "❌ Annual Income or Spending Score "
+                "Annual Income or Spending Score "
                 "column was not found."
             )
 
             st.write(
-                "Columns found in your CSV:"
+                "Columns found:"
             )
 
             st.write(
                 list(df.columns)
             )
 
+
         if (
             income_column is not None
             and spending_column is not None
         ):
 
+            st.markdown("---")
+
             st.subheader(
                 "🎯 Customer Segmentation"
             )
 
-            st.info(
-                "The system uses Annual Income "
-                "and Spending Score to create "
-                "four customer groups."
+            run_button = st.button(
+                "RUN CUSTOMER SEGMENTATION  →",
+                use_container_width=True,
+                key="run_button"
             )
 
-            run_button = st.button(
-                "🚀 Run Customer Segmentation",
-                key="run_segmentation"
-            )
 
             if run_button:
 
@@ -655,16 +897,15 @@ if st.session_state.logged_in:
                     ]
                 ].dropna()
 
+
                 if len(valid_data) < 4:
 
                     st.error(
-                        "❌ At least 4 valid customers "
-                        "are required."
+                        "At least 4 valid customers are required."
                     )
 
-                else:
 
-                    # K-MEANS
+                else:
 
                     model = KMeans(
                         n_clusters=4,
@@ -672,15 +913,17 @@ if st.session_state.logged_in:
                         n_init=10
                     )
 
-                    cluster_numbers = model.fit_predict(
-                        valid_data
+                    cluster_numbers = (
+                        model.fit_predict(
+                            valid_data
+                        )
                     )
 
-                    # GROUP NAMES
 
                     df["Customer Group"] = (
                         "Not Available"
                     )
+
 
                     for index, cluster in zip(
                         valid_data.index,
@@ -695,12 +938,13 @@ if st.session_state.logged_in:
                             + str(cluster + 1)
                         )
 
+
                     st.success(
-                        "🎉 Customer segmentation "
-                        "completed successfully!"
+                        "Customer segmentation completed successfully!"
                     )
 
-                    # CUSTOMER GROUPS
+
+                    # GROUP TABLE
 
                     st.subheader(
                         "👥 Customer Groups"
@@ -711,9 +955,12 @@ if st.session_state.logged_in:
                         use_container_width=True
                     )
 
-                    # CENTERS
 
-                    centers = model.cluster_centers_
+                    # SUMMARY
+
+                    centers = (
+                        model.cluster_centers_
+                    )
 
                     average_income = (
                         valid_data[
@@ -727,9 +974,9 @@ if st.session_state.logged_in:
                         ].mean()
                     )
 
-                    # SUMMARY
 
                     summary_data = []
+
 
                     for cluster in range(4):
 
@@ -767,9 +1014,11 @@ if st.session_state.logged_in:
                             }
                         )
 
+
                     summary_df = pd.DataFrame(
                         summary_data
                     )
+
 
                     st.subheader(
                         "📊 Customer Group Summary"
@@ -779,6 +1028,7 @@ if st.session_state.logged_in:
                         summary_df,
                         use_container_width=True
                     )
+
 
                     # CHART
 
@@ -800,27 +1050,30 @@ if st.session_state.logged_in:
                         chart_data
                     )
 
-                    # IDENTIFY GROUPS
+
+                    # GROUP IDENTIFICATION
 
                     vip_group = None
                     potential_group = None
                     deal_group = None
                     growth_group = None
 
+
                     for cluster in range(4):
 
-                        income = centers[
-                            cluster
-                        ][0]
+                        income = (
+                            centers[cluster][0]
+                        )
 
-                        spending = centers[
-                            cluster
-                        ][1]
+                        spending = (
+                            centers[cluster][1]
+                        )
 
                         group_name = (
                             "Group "
                             + str(cluster + 1)
                         )
+
 
                         if (
                             income >= average_income
@@ -850,129 +1103,144 @@ if st.session_state.logged_in:
 
                             growth_group = group_name
 
-                    # SMART INSIGHTS
+
+                    # INSIGHTS
+
+                    st.markdown("---")
 
                     st.subheader(
-                        "🤖 Smart Customer Insights"
+                        "💡 Smart Customer Insights"
                     )
 
-                    st.write(
-                        "Marketing suggestions based "
-                        "on customer income and "
-                        "spending behaviour."
-                    )
-
-                    st.subheader(
-                        "💡 Smart Offers"
-                    )
-
-                    # VIP
 
                     if vip_group is not None:
 
                         st.markdown(
                             """
-                            <div class="offer">
-                            <h3>💎 VIP Champions</h3>
-                            <p>
-                            High income and high spending customers.
-                            </p>
-                            <p>
-                            <b>🎁 Offer:</b>
-                            Premium products, loyalty rewards
-                            and exclusive early access.
-                            </p>
-                            <p>
-                            <b>📢 Strategy:</b>
-                            Build long-term customer loyalty.
-                            </p>
+                            <div class="offer-card">
+
+                                <div class="offer-title">
+                                    💎 VIP Champions
+                                </div>
+
+                                <div class="offer-text">
+                                    <b>Customer type:</b>
+                                    High income + high spending.
+                                    <br><br>
+
+                                    <b>Recommended offer:</b>
+                                    Premium products, loyalty rewards
+                                    and exclusive early access.
+                                    <br><br>
+
+                                    <b>Marketing strategy:</b>
+                                    Build long-term loyalty.
+                                </div>
+
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
 
-                    # POTENTIAL
 
                     if potential_group is not None:
 
                         st.markdown(
                             """
-                            <div class="offer">
-                            <h3>🌟 Hidden Potential</h3>
-                            <p>
-                            High income but lower spending customers.
-                            </p>
-                            <p>
-                            <b>🎁 Offer:</b>
-                            Personalised discounts,
-                            recommendations and trial offers.
-                            </p>
-                            <p>
-                            <b>📢 Strategy:</b>
-                            Encourage more frequent purchases.
-                            </p>
+                            <div class="offer-card">
+
+                                <div class="offer-title">
+                                    🌟 Hidden Potential
+                                </div>
+
+                                <div class="offer-text">
+                                    <b>Customer type:</b>
+                                    High income + lower spending.
+                                    <br><br>
+
+                                    <b>Recommended offer:</b>
+                                    Personalised discounts,
+                                    recommendations and trial offers.
+                                    <br><br>
+
+                                    <b>Marketing strategy:</b>
+                                    Encourage more frequent purchases.
+                                </div>
+
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
 
-                    # DEAL LOVERS
 
                     if deal_group is not None:
 
                         st.markdown(
                             """
-                            <div class="offer">
-                            <h3>🔥 Deal Lovers</h3>
-                            <p>
-                            Lower income but active spending customers.
-                            </p>
-                            <p>
-                            <b>🎁 Offer:</b>
-                            Bundle deals, value packs
-                            and limited-time offers.
-                            </p>
-                            <p>
-                            <b>📢 Strategy:</b>
-                            Reward their engagement.
-                            </p>
+                            <div class="offer-card">
+
+                                <div class="offer-title">
+                                    🔥 Deal Lovers
+                                </div>
+
+                                <div class="offer-text">
+                                    <b>Customer type:</b>
+                                    Lower income + high spending.
+                                    <br><br>
+
+                                    <b>Recommended offer:</b>
+                                    Bundle deals, value packs
+                                    and limited-time offers.
+                                    <br><br>
+
+                                    <b>Marketing strategy:</b>
+                                    Reward customer engagement.
+                                </div>
+
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
 
-                    # GROWTH
 
                     if growth_group is not None:
 
                         st.markdown(
                             """
-                            <div class="offer">
-                            <h3>🌱 Growth Customers</h3>
-                            <p>
-                            Lower income and lower spending customers.
-                            </p>
-                            <p>
-                            <b>🎁 Offer:</b>
-                            Welcome offers, affordable bundles
-                            and first-purchase incentives.
-                            </p>
-                            <p>
-                            <b>📢 Strategy:</b>
-                            Encourage first and repeat purchases.
-                            </p>
+                            <div class="offer-card">
+
+                                <div class="offer-title">
+                                    🌱 Growth Customers
+                                </div>
+
+                                <div class="offer-text">
+                                    <b>Customer type:</b>
+                                    Lower income + lower spending.
+                                    <br><br>
+
+                                    <b>Recommended offer:</b>
+                                    Welcome offers, affordable bundles
+                                    and first-purchase incentives.
+                                    <br><br>
+
+                                    <b>Marketing strategy:</b>
+                                    Encourage first and repeat purchases.
+                                </div>
+
                             </div>
                             """,
                             unsafe_allow_html=True
                         )
+
 
                     # DOWNLOAD
 
                     st.markdown("---")
 
                     st.subheader(
-                        "📥 Download Segmented Customer Report"
+                        "📥 Download Report"
                     )
+
 
                     download_df = df.drop(
                         columns=[
@@ -982,27 +1250,30 @@ if st.session_state.logged_in:
                         errors="ignore"
                     )
 
+
                     csv_data = (
                         download_df
                         .to_csv(index=False)
                         .encode("utf-8")
                     )
 
+
                     st.download_button(
-                        label="📥 Download CSV Report",
+                        "DOWNLOAD CSV REPORT  ↓",
                         data=csv_data,
                         file_name="customer_segments.csv",
                         mime="text/csv",
-                        key="download_report"
+                        use_container_width=True
                     )
+
 
     # LOGOUT
 
     st.markdown("---")
 
     if st.button(
-        "🚪 Logout",
-        key="logout_button"
+        "🚪 LOG OUT",
+        use_container_width=True
     ):
 
         st.session_state.logged_in = False
