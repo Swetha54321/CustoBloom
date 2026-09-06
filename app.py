@@ -1,27 +1,32 @@
+import streamlit as st
+import pandas as pd
+from sklearn.cluster import KMeans
+import sqlite3
+import hashlib
+import re
 
 
 # =========================================================
-# PAGE SETTINGS
 # PAGE CONFIGURATION
 # =========================================================
 
 st.set_page_config(
-@@ -21,28 +21,37 @@
+    page_title="Smart Customer Segmentation",
+    page_icon="🛍️",
+    layout="wide"
+)
+
+
+# =========================================================
 # DATABASE
 # =========================================================
 
-def create_database():
 def get_database():
 
-conn = sqlite3.connect("users.db")
+    conn = sqlite3.connect("users.db")
 
-cursor = conn.cursor()
+    cursor = conn.cursor()
 
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            username TEXT PRIMARY KEY,
-            email TEXT NOT NULL,
-            password TEXT NOT NULL
     cursor.execute(
         "CREATE TABLE IF NOT EXISTS users "
         "(username TEXT PRIMARY KEY, password TEXT NOT NULL)"
@@ -36,64 +41,46 @@ cursor = conn.cursor()
 
         cursor.execute(
             "ALTER TABLE users ADD COLUMN email TEXT"
-)
-    """)
+        )
 
-conn.commit()
-    conn.close()
+    conn.commit()
 
     return conn
 
 
 def hash_password(password):
 
-return hashlib.sha256(
-        password.encode()
+    return hashlib.sha256(
         password.encode("utf-8")
-).hexdigest()
+    ).hexdigest()
 
 
-@@ -53,71 +62,70 @@ def valid_email(email):
-return re.match(pattern, email) is not None
+def valid_email(email):
+
+    pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+    return re.match(pattern, email) is not None
 
 
-def register_user(username, email, password):
 def create_account(username, email, password):
 
-    conn = sqlite3.connect("users.db")
     conn = get_database()
 
-cursor = conn.cursor()
+    cursor = conn.cursor()
 
-    try:
     cursor.execute(
         "SELECT username FROM users WHERE username = ?",
         (username,)
     )
 
-        cursor.execute(
-            """
-            INSERT INTO users
-            (username, email, password)
-            VALUES (?, ?, ?)
-            """,
-            (
-                username,
-                email,
-                hash_password(password)
-            )
-        )
     existing_user = cursor.fetchone()
 
     if existing_user is not None:
 
-        conn.commit()
         conn.close()
 
-        success = True
         return False
 
-    except sqlite3.IntegrityError:
     cursor.execute(
         "INSERT INTO users (username, email, password) "
         "VALUES (?, ?, ?)",
@@ -104,103 +91,52 @@ cursor = conn.cursor()
         )
     )
 
-        success = False
     conn.commit()
 
-conn.close()
+    conn.close()
 
-    return success
     return True
 
 
-def check_login(username, password):
 def login_user(username, password):
 
-    conn = sqlite3.connect("users.db")
     conn = get_database()
 
-cursor = conn.cursor()
+    cursor = conn.cursor()
 
-cursor.execute(
-        """
-        SELECT *
-        FROM users
-        WHERE username = ?
-        AND password = ?
-        """,
+    cursor.execute(
         "SELECT username FROM users "
         "WHERE username = ? AND password = ?",
-(
-username,
-hash_password(password)
-)
-)
+        (
+            username,
+            hash_password(password)
+        )
+    )
 
-    user = cursor.fetchone()
     result = cursor.fetchone()
 
-conn.close()
+    conn.close()
 
-    return user is not None
     return result is not None
 
 
-create_database()
 # Create database
 get_database().close()
 
 
 # =========================================================
-# SESSION STATE
 # SESSION
 # =========================================================
 
 if "logged_in" not in st.session_state:
-@@ -126,61 +134,70 @@ def check_login(username, password):
+
+    st.session_state.logged_in = False
 
 
 # =========================================================
-# CUSTOM CSS
 # DESIGN
 # =========================================================
 
-st.markdown("""
-<style>
-
-.stApp {
-    background: linear-gradient(135deg, #0f172a, #172554);
-    color: white;
-}
-
-.main-title {
-    font-size: 40px;
-    font-weight: bold;
-    color: #60a5fa;
-}
-
-.subtitle {
-    color: #cbd5e1;
-    font-size: 18px;
-}
-
-.card {
-    background: #1e293b;
-    padding: 25px;
-    border-radius: 18px;
-    border: 1px solid #334155;
-    margin-bottom: 15px;
-}
-
-.offer {
-    background: #172554;
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #3b82f6;
-    margin-bottom: 12px;
-}
-
-</style>
-""", unsafe_allow_html=True)
 st.markdown(
     """
     <style>
@@ -248,207 +184,207 @@ st.markdown(
 
 
 # =========================================================
-# LOGIN / SIGN UP PAGE
 # LOGIN / SIGN UP
 # =========================================================
 
 if not st.session_state.logged_in:
 
-st.markdown(
-        "<h1 class='main-title'>🛍️ Smart Customer Segmentation</h1>",
+    st.markdown(
         "<h1 class='title'>🛍️ Smart Customer Segmentation</h1>",
-unsafe_allow_html=True
-)
+        unsafe_allow_html=True
+    )
 
-st.markdown(
-        "<p class='subtitle'>Turn customer data into smart business decisions.</p>",
+    st.markdown(
         "<p class='subtitle'>"
         "Turn customer data into smart business decisions."
         "</p>",
-unsafe_allow_html=True
-)
+        unsafe_allow_html=True
+    )
 
-@@ -199,15 +216,15 @@ def check_login(username, password):
+    st.markdown("---")
 
-st.subheader("🔐 Login to Dashboard")
+    login_tab, signup_tab = st.tabs(
+        ["🔐 Login", "📝 Create Account"]
+    )
 
-        username = st.text_input(
+
+    # =====================================================
+    # LOGIN
+    # =====================================================
+
+    with login_tab:
+
+        st.subheader("🔐 Login to Dashboard")
+
         login_username = st.text_input(
-"👤 Username",
-            key="login_username"
+            "👤 Username",
             key="login_user"
-)
+        )
 
-        password = st.text_input(
         login_password = st.text_input(
-"🔒 Password",
-type="password",
-            key="login_password"
+            "🔒 Password",
+            type="password",
             key="login_pass"
-)
+        )
 
-if st.button(
-@@ -216,17 +233,17 @@ def check_login(username, password):
-):
+        if st.button(
+            "🚀 Login",
+            use_container_width=True
+        ):
 
-if (
-                username.strip() == ""
-                or password.strip() == ""
+            if (
                 login_username.strip() == ""
                 or login_password == ""
-):
+            ):
 
-st.warning(
-"⚠️ Please enter username and password."
-)
+                st.warning(
+                    "⚠️ Please enter username and password."
+                )
 
-            elif check_login(
-                username.strip(),
-                password
             elif login_user(
                 login_username.strip(),
                 login_password
-):
+            ):
 
-st.session_state.logged_in = True
-@@ -254,38 +271,37 @@ def check_login(username, password):
+                st.session_state.logged_in = True
 
-new_username = st.text_input(
-"👤 Create Username",
-            key="signup_username"
+                st.success(
+                    "✅ Login successful!"
+                )
+
+                st.rerun()
+
+            else:
+
+                st.error(
+                    "❌ Invalid username or password."
+                )
+
+
+    # =====================================================
+    # CREATE ACCOUNT
+    # =====================================================
+
+    with signup_tab:
+
+        st.subheader("📝 Create New Account")
+
+        new_username = st.text_input(
+            "👤 Create Username",
             key="new_user"
-)
+        )
 
-new_email = st.text_input(
-"📧 Email Address",
-            key="signup_email"
+        new_email = st.text_input(
+            "📧 Email Address",
             key="new_email"
-)
+        )
 
-new_password = st.text_input(
-"🔒 Create Password",
-type="password",
-            key="signup_password"
+        new_password = st.text_input(
+            "🔒 Create Password",
+            type="password",
             key="new_pass"
-)
+        )
 
-confirm_password = st.text_input(
-"🔒 Confirm Password",
-type="password",
-            key="confirm_password"
+        confirm_password = st.text_input(
+            "🔒 Confirm Password",
+            type="password",
             key="confirm_pass"
-)
+        )
 
-if st.button(
-"✨ Create Account",
-use_container_width=True
-):
+        if st.button(
+            "✨ Create Account",
+            use_container_width=True
+        ):
 
-            username_clean = new_username.strip()
-
-            email_clean = new_email.strip()
             username = new_username.strip()
             email = new_email.strip()
 
-if (
-                username_clean == ""
-                or email_clean == ""
+            if (
                 username == ""
                 or email == ""
-or new_password == ""
-or confirm_password == ""
-):
-@@ -294,7 +310,7 @@ def check_login(username, password):
-"⚠️ Please fill all fields."
-)
+                or new_password == ""
+                or confirm_password == ""
+            ):
 
-            elif not valid_email(email_clean):
+                st.warning(
+                    "⚠️ Please fill all fields."
+                )
+
             elif not valid_email(email):
 
-st.error(
-"❌ Please enter a valid email address."
-@@ -303,7 +319,7 @@ def check_login(username, password):
-elif len(new_password) < 4:
+                st.error(
+                    "❌ Please enter a valid email address."
+                )
 
-st.warning(
-                    "⚠️ Password should contain at least 4 characters."
+            elif len(new_password) < 4:
+
+                st.warning(
                     "⚠️ Password must contain at least 4 characters."
-)
+                )
 
-elif new_password != confirm_password:
-@@ -314,24 +330,27 @@ def check_login(username, password):
+            elif new_password != confirm_password:
 
-else:
+                st.error(
+                    "❌ Passwords do not match."
+                )
 
-                created = register_user(
-                    username_clean,
-                    email_clean,
+            else:
+
                 account_created = create_account(
                     username,
                     email,
-new_password
-)
+                    new_password
+                )
 
-                if created:
                 if account_created:
 
-st.success(
-                        "🎉 Account created successfully! "
-                        "You can now login."
+                    st.success(
                         "🎉 Account created successfully!"
                     )
 
                     st.info(
                         "Now open the Login tab and login "
                         "with your new account."
-)
+                    )
 
-else:
+                else:
 
-st.error(
-                        "❌ Username already exists. "
-                        "Please choose another username."
+                    st.error(
                         "❌ Username already exists."
-)
+                    )
 
 
-@@ -342,56 +361,70 @@ def check_login(username, password):
+# =========================================================
+# DASHBOARD
+# =========================================================
+
 else:
 
-st.markdown(
-        "<h1 class='main-title'>📊 Customer Segmentation Dashboard</h1>",
+    st.markdown(
         "<h1 class='title'>"
         "📊 Customer Segmentation Dashboard"
         "</h1>",
-unsafe_allow_html=True
-)
+        unsafe_allow_html=True
+    )
 
-    st.write(
     st.markdown(
         "<p class='subtitle'>"
-"Welcome to your Smart Customer Segmentation System! 👋"
+        "Welcome to your Smart Customer Segmentation System! 👋"
         "</p>",
         unsafe_allow_html=True
-)
+    )
 
-st.markdown("---")
+    st.markdown("---")
 
 
-# =====================================================
-    # TOP CARDS
+    # =====================================================
     # FEATURE CARDS
-# =====================================================
+    # =====================================================
 
-col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-with col1:
+    with col1:
 
-        st.markdown("""
-        <div class="card">
-        <h2>📁 Upload Dataset</h2>
-        <p>Upload your customer CSV data.</p>
-        </div>
-        """, unsafe_allow_html=True)
         st.markdown(
             """
             <div class="card">
@@ -459,14 +395,8 @@ with col1:
             unsafe_allow_html=True
         )
 
-with col2:
+    with col2:
 
-        st.markdown("""
-        <div class="card">
-        <h2>🎯 K-Means Groups</h2>
-        <p>Automatically discover customer segments.</p>
-        </div>
-        """, unsafe_allow_html=True)
         st.markdown(
             """
             <div class="card">
@@ -477,14 +407,8 @@ with col2:
             unsafe_allow_html=True
         )
 
-with col3:
+    with col3:
 
-        st.markdown("""
-        <div class="card">
-        <h2>🤖 Smart Offers</h2>
-        <p>Get targeted marketing suggestions.</p>
-        </div>
-        """, unsafe_allow_html=True)
         st.markdown(
             """
             <div class="card">
@@ -496,217 +420,224 @@ with col3:
         )
 
 
-st.markdown("---")
+    st.markdown("---")
 
 
-# =====================================================
-    # UPLOAD DATASET
+    # =====================================================
     # CSV UPLOAD
-# =====================================================
+    # =====================================================
 
-st.subheader("📂 Upload Customer Dataset")
-@@ -410,7 +443,11 @@ def check_login(username, password):
-df.columns
-.astype(str)
-.str.strip()
-            .str.replace("\ufeff", "", regex=False)
+    st.subheader("📂 Upload Customer Dataset")
+
+    uploaded_file = st.file_uploader(
+        "Choose a CSV file",
+        type=["csv"]
+    )
+
+
+    if uploaded_file is not None:
+
+        df = pd.read_csv(uploaded_file)
+
+        df.columns = (
+            df.columns
+            .astype(str)
+            .str.strip()
             .str.replace(
                 "\ufeff",
                 "",
                 regex=False
             )
-)
+        )
 
-df = df.reset_index(drop=True)
-@@ -421,7 +458,7 @@ def check_login(username, password):
+        df = df.reset_index(drop=True)
+
+        st.success(
+            "✅ Dataset uploaded successfully!"
+        )
 
 
-# =================================================
-        # DATASET PREVIEW
+        # =================================================
         # DATA PREVIEW
-# =================================================
+        # =================================================
 
-st.subheader("👀 Dataset Preview")
-@@ -435,35 +472,35 @@ def check_login(username, password):
+        st.subheader("👀 Dataset Preview")
+
+        st.dataframe(
+            df,
+            use_container_width=True
+        )
+
+        st.markdown("---")
 
 
-# =================================================
-        # FIND REQUIRED COLUMNS
+        # =================================================
         # FIND COLUMNS
-# =================================================
+        # =================================================
 
-income_column = None
+        income_column = None
+        spending_column = None
 
-spending_column = None
+        for column in df.columns:
 
-
-for column in df.columns:
-
-            name = str(column).lower().strip()
             column_name = str(
                 column
             ).lower().strip()
 
-if (
-                "annual" in name
-                and "income" in name
+            if (
                 "annual" in column_name
                 and "income" in column_name
-):
+            ):
 
-income_column = column
+                income_column = column
 
-if (
-                "spending" in name
-                and "score" in name
+            if (
                 "spending" in column_name
                 and "score" in column_name
-):
+            ):
 
-spending_column = column
+                spending_column = column
 
 
-# =================================================
-        # CUSTOMER SEGMENTATION
+        # =================================================
         # CHECK COLUMNS
-# =================================================
+        # =================================================
 
-if (
-@@ -475,6 +512,7 @@ def check_login(username, password):
-"🎯 Customer Segmentation"
-)
+        if (
+            income_column is not None
+            and spending_column is not None
+        ):
 
-
-if st.button(
-"🚀 Run Customer Segmentation",
-use_container_width=True
-@@ -490,6 +528,7 @@ def check_login(username, password):
-errors="coerce"
-)
+            st.subheader(
+                "🎯 Customer Segmentation"
+            )
 
 
-valid_data = df[
-[
-"Income_Value",
-@@ -506,7 +545,9 @@ def check_login(username, password):
+            if st.button(
+                "🚀 Run Customer Segmentation",
+                use_container_width=True
+            ):
 
-else:
+                df["Income_Value"] = pd.to_numeric(
+                    df[income_column],
+                    errors="coerce"
+                )
+
+                df["Spending_Value"] = pd.to_numeric(
+                    df[spending_column],
+                    errors="coerce"
+                )
+
+
+                valid_data = df[
+                    [
+                        "Income_Value",
+                        "Spending_Value"
+                    ]
+                ].dropna()
+
+
+                if len(valid_data) < 4:
+
+                    st.error(
+                        "❌ At least 4 valid customers are required."
+                    )
+
+                else:
 
                     # =====================================
-# K-MEANS
+                    # K-MEANS
                     # =====================================
 
-model = KMeans(
-n_clusters=4,
-@@ -519,11 +560,12 @@ def check_login(username, password):
-)
+                    model = KMeans(
+                        n_clusters=4,
+                        random_state=42,
+                        n_init=10
+                    )
+
+                    cluster_numbers = model.fit_predict(
+                        valid_data
+                    )
 
 
                     # =====================================
-# GROUP ASSIGNMENT
+                    # GROUP ASSIGNMENT
                     # =====================================
 
-df["Customer Group"] = "Not Available"
+                    df["Customer Group"] = "Not Available"
 
+                    for index, cluster in zip(
+                        valid_data.index,
+                        cluster_numbers
+                    ):
 
-for index, cluster in zip(
-valid_data.index,
-cluster_numbers
-@@ -532,17 +574,20 @@ def check_login(username, password):
-df.at[
-index,
-"Customer Group"
-                        ] = "Group " + str(cluster + 1)
+                        df.at[
+                            index,
+                            "Customer Group"
                         ] = (
                             "Group "
                             + str(cluster + 1)
                         )
 
 
-st.success(
-"🎉 Customer segmentation completed successfully!"
-)
+                    st.success(
+                        "🎉 Customer segmentation completed successfully!"
+                    )
 
 
-                    # =================================================
-                    # CUSTOMER GROUPS
-                    # =================================================
                     # =====================================
                     # RESULTS
                     # =====================================
 
-st.subheader(
-"👥 Customer Groups"
-@@ -554,9 +599,9 @@ def check_login(username, password):
-)
+                    st.subheader(
+                        "👥 Customer Groups"
+                    )
+
+                    st.dataframe(
+                        df,
+                        use_container_width=True
+                    )
 
 
-                    # =================================================
-                    # CLUSTER CENTERS
-                    # =================================================
                     # =====================================
                     # CENTERS
                     # =====================================
 
-centers = model.cluster_centers_
+                    centers = model.cluster_centers_
 
-@@ -569,69 +614,67 @@ def check_login(username, password):
-].mean()
+                    average_income = valid_data[
+                        "Income_Value"
+                    ].mean()
+
+                    average_spending = valid_data[
+                        "Spending_Value"
+                    ].mean()
 
 
-                    # =================================================
-                    # GROUP SUMMARY
-                    # =================================================
                     # =====================================
                     # SUMMARY
                     # =====================================
 
-st.subheader(
-"📊 Customer Group Summary"
-)
+                    st.subheader(
+                        "📊 Customer Group Summary"
+                    )
 
-summary_data = []
+                    summary_data = []
 
+                    for cluster in range(4):
 
-for cluster in range(4):
-
-                        cluster_income = centers[
                         income = centers[
-cluster
-][0]
+                            cluster
+                        ][0]
 
-                        cluster_spending = centers[
                         spending = centers[
-cluster
-][1]
+                            cluster
+                        ][1]
 
-                        customer_count = (
                         count = (
-cluster_numbers == cluster
-).sum()
+                            cluster_numbers == cluster
+                        ).sum()
 
-
-                        summary_data.append({
-
-                            "Group":
-                                "Group "
-                                + str(cluster + 1),
-
-                            "Customers":
-                                int(customer_count),
-
-                            "Avg Income":
-                                round(
-                                    cluster_income,
-                                    2
-                                ),
-
-                            "Avg Spending Score":
-                                round(
-                                    cluster_spending,
-                                    2
-                                )
-                        })
                         summary_data.append(
                             {
                                 "Group":
@@ -731,145 +662,121 @@ cluster_numbers == cluster
                         )
 
 
-summary_df = pd.DataFrame(
-summary_data
-)
+                    summary_df = pd.DataFrame(
+                        summary_data
+                    )
+
+                    st.dataframe(
+                        summary_df,
+                        use_container_width=True
+                    )
 
 
-st.dataframe(
-summary_df,
-use_container_width=True
-)
-
-
-                    # =================================================
                     # =====================================
-# BAR CHART
-                    # =================================================
+                    # BAR CHART
                     # =====================================
 
-st.subheader(
-"📈 Customers in Each Group"
-@@ -644,7 +687,6 @@ def check_login(username, password):
-]
-].set_index("Group")
+                    st.subheader(
+                        "📈 Customers in Each Group"
+                    )
+
+                    chart_data = summary_df[
+                        [
+                            "Group",
+                            "Customers"
+                        ]
+                    ].set_index("Group")
+
+                    st.bar_chart(
+                        chart_data
+                    )
 
 
-st.bar_chart(
-chart_data
-)
-@@ -653,22 +695,14 @@ def check_login(username, password):
-st.markdown("---")
+                    st.markdown("---")
 
 
-                    # =================================================
-                    # SMART INSIGHTS
-                    # =================================================
                     # =====================================
                     # FIND CUSTOMER TYPES
                     # =====================================
 
-                    st.subheader(
-                        "🤖 Smart Customer Insights"
-                    )
-
-
-                    high_income_high_spending = None
-
-                    high_income_low_spending = None
-
-                    low_income_high_spending = None
-
-                    low_income_low_spending = None
                     vip_group = None
                     potential_group = None
                     deal_group = None
                     growth_group = None
 
 
-for cluster in range(4):
-@@ -693,89 +727,180 @@ def check_login(username, password):
-spending >= average_spending
-):
+                    for cluster in range(4):
 
-                            high_income_high_spending = (
-                                group_name
-                            )
+                        income = centers[
+                            cluster
+                        ][0]
+
+                        spending = centers[
+                            cluster
+                        ][1]
+
+                        group_name = (
+                            "Group "
+                            + str(cluster + 1)
+                        )
+
+
+                        if (
+                            income >= average_income
+                            and
+                            spending >= average_spending
+                        ):
+
                             vip_group = group_name
 
-elif (
-income >= average_income
-and
-spending < average_spending
-):
+                        elif (
+                            income >= average_income
+                            and
+                            spending < average_spending
+                        ):
 
-                            high_income_low_spending = (
-                                group_name
-                            )
                             potential_group = group_name
 
-elif (
-income < average_income
-and
-spending >= average_spending
-):
+                        elif (
+                            income < average_income
+                            and
+                            spending >= average_spending
+                        ):
 
-                            low_income_high_spending = (
-                                group_name
-                            )
                             deal_group = group_name
 
-else:
+                        else:
 
-                            low_income_low_spending = (
-                                group_name
-                            )
                             growth_group = group_name
 
 
-                    # =================================================
                     # =====================================
-# SMART OFFERS
-                    # =================================================
+                    # SMART OFFERS
                     # =====================================
 
                     st.subheader(
                         "🤖 Smart Customer Insights"
                     )
 
-st.subheader(
-"💡 Smart Offers & Marketing Ideas"
-)
+                    st.subheader(
+                        "💡 Smart Offers & Marketing Ideas"
+                    )
 
 
-                    if high_income_high_spending is not None:
                     if vip_group is not None:
 
-st.markdown(
-                            f"""
+                        st.markdown(
                             """
-                           <div class="offer">
-
-                            <h3>
-                            💎 VIP Champions —
-                            {high_income_high_spending}
-                            </h3>
-
+                            <div class="offer">
                             <h3>💎 VIP Champions</h3>
-                           <p>
-                            These customers have high income
-                            and high spending behaviour.
+                            <p>
                             High income and high spending customers.
-                           </p>
-
-                           <b>🎁 Offer:</b>
-                           Premium products, loyalty rewards
-                           and exclusive early access.
-
-                           <br><br>
-
-                           <b>📢 Strategy:</b>
-                            Build long-term loyalty with VIP experiences.
+                            </p>
+                            <b>🎁 Offer:</b>
+                            Premium products, loyalty rewards
+                            and exclusive early access.
+                            <br><br>
+                            <b>📢 Strategy:</b>
                             Build long-term customer loyalty.
                             </div>
                             """,
@@ -892,19 +799,17 @@ st.markdown(
                             <br><br>
                             <b>📢 Strategy:</b>
                             Encourage more frequent purchases.
-                           </div>
-                           """,
-unsafe_allow_html=True
-)
+                            </div>
+                            """,
+                            unsafe_allow_html=True
+                        )
 
 
-                    if high_income_low_spending is not None:
                     if deal_group is not None:
 
-st.markdown(
-                            f"""
+                        st.markdown(
                             """
-                           <div class="offer">
+                            <div class="offer">
                             <h3>🔥 Deal Lovers</h3>
                             <p>
                             Lower income but active spending customers.
@@ -921,20 +826,13 @@ st.markdown(
                         )
 
 
-                            <h3>
-                            🌟 Hidden Potential —
-                            {high_income_low_spending}
-                            </h3>
                     if growth_group is not None:
 
                         st.markdown(
                             """
                             <div class="offer">
                             <h3>🌱 Growth Customers</h3>
-                           <p>
-                            These customers have strong purchasing
-                            capacity but lower spending.
-                            </
+                            <p>
                             Lower income and lower spending customers.
                             </p>
                             <b>🎁 Offer:</b>
