@@ -32,7 +32,6 @@ def get_database():
         "(username TEXT PRIMARY KEY, password TEXT NOT NULL)"
     )
 
-    # Add email column if it does not already exist
     cursor.execute("PRAGMA table_info(users)")
 
     columns = [row[1] for row in cursor.fetchall()]
@@ -120,7 +119,6 @@ def login_user(username, password):
     return result is not None
 
 
-# Create database
 get_database().close()
 
 
@@ -134,47 +132,137 @@ if "logged_in" not in st.session_state:
 
 
 # =========================================================
-# DESIGN
+# LAVENDER DESIGN
 # =========================================================
 
 st.markdown(
     """
     <style>
 
+    /* Main background */
     .stApp {
-        background: linear-gradient(
-            135deg,
-            #0f172a,
-            #172554
-        );
-        color: white;
+        background: #F3EEFF;
+        color: #24143D;
     }
 
+    /* Main headings */
     .title {
         font-size: 42px;
         font-weight: bold;
-        color: #60a5fa;
+        color: #4C1D95 !important;
     }
 
+    /* Subtitle */
     .subtitle {
         font-size: 18px;
-        color: #cbd5e1;
+        color: #3B3150 !important;
     }
 
+    /* Normal Streamlit text */
+    .stApp p,
+    .stApp label,
+    .stApp span,
+    .stApp div {
+        color: #24143D;
+    }
+
+    /* Input labels */
+    div[data-testid="stTextInput"] label,
+    div[data-testid="stTextInput"] label p {
+        color: #24143D !important;
+        font-weight: 700 !important;
+    }
+
+    /* Input boxes */
+    div[data-testid="stTextInput"] input {
+        background-color: #FFFFFF !important;
+        color: #24143D !important;
+        border: 2px solid #C4B5FD !important;
+        border-radius: 10px !important;
+    }
+
+    /* Placeholder */
+    div[data-testid="stTextInput"] input::placeholder {
+        color: #6B5B7A !important;
+        opacity: 1 !important;
+    }
+
+    /* Cards */
     .card {
-        background: #1e293b;
+        background: #FFFFFF;
         padding: 22px;
         border-radius: 18px;
-        border: 1px solid #334155;
+        border: 2px solid #DDD6FE;
         margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(76, 29, 149, 0.08);
     }
 
+    .card h2 {
+        color: #4C1D95 !important;
+    }
+
+    .card p {
+        color: #3B3150 !important;
+    }
+
+    /* Offer cards */
     .offer {
-        background: #172554;
+        background: #FFFFFF;
         padding: 20px;
         border-radius: 15px;
-        border: 1px solid #3b82f6;
+        border: 2px solid #C4B5FD;
         margin-bottom: 15px;
+        box-shadow: 0 4px 12px rgba(76, 29, 149, 0.08);
+    }
+
+    .offer h3 {
+        color: #5B21B6 !important;
+    }
+
+    .offer p,
+    .offer b {
+        color: #312E3A !important;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: #6D28D9 !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #5B21B6 !important;
+        color: #FFFFFF !important;
+    }
+
+    /* Tabs */
+    button[data-baseweb="tab"] {
+        color: #4C1D95 !important;
+        font-weight: 700 !important;
+    }
+
+    /* File uploader */
+    section[data-testid="stFileUploaderDropzone"] {
+        background: #FFFFFF !important;
+        border: 2px dashed #A78BFA !important;
+        border-radius: 12px !important;
+    }
+
+    /* Dataframes */
+    div[data-testid="stDataFrame"] {
+        border: 2px solid #DDD6FE;
+        border-radius: 10px;
+    }
+
+    /* Download button */
+    .stDownloadButton > button {
+        background-color: #6D28D9 !important;
+        color: #FFFFFF !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
     }
 
     </style>
