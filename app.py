@@ -132,137 +132,256 @@ if "logged_in" not in st.session_state:
 
 
 # =========================================================
-# LAVENDER DESIGN
+# PINK + DARK PURPLE DESIGN
 # =========================================================
 
 st.markdown(
     """
     <style>
 
-    /* Main background */
+    /* =====================================================
+       FULL PAGE BACKGROUND
+       ===================================================== */
+
     .stApp {
-        background: #F3EEFF;
-        color: #24143D;
+        background: #FCE7F3 !important;
     }
 
-    /* Main headings */
-    .title {
-        font-size: 42px;
-        font-weight: bold;
-        color: #4C1D95 !important;
+    [data-testid="stAppViewContainer"] {
+        background: #FCE7F3 !important;
     }
 
-    /* Subtitle */
-    .subtitle {
-        font-size: 18px;
-        color: #3B3150 !important;
+    [data-testid="stMain"] {
+        background: #FCE7F3 !important;
     }
 
-    /* Normal Streamlit text */
+    [data-testid="stHeader"] {
+        background: #FCE7F3 !important;
+    }
+
+
+    /* =====================================================
+       MAIN TEXT
+       ===================================================== */
+
+    .stApp,
     .stApp p,
-    .stApp label,
     .stApp span,
-    .stApp div {
+    .stApp label {
         color: #24143D;
     }
 
-    /* Input labels */
-    div[data-testid="stTextInput"] label,
+
+    /* =====================================================
+       MAIN TITLE
+       ===================================================== */
+
+    .title {
+        font-size: 44px !important;
+        font-weight: 800 !important;
+        color: #581C87 !important;
+    }
+
+
+    /* =====================================================
+       SUBTITLE
+       ===================================================== */
+
+    .subtitle {
+        font-size: 21px !important;
+        font-weight: 500 !important;
+        color: #3B234D !important;
+    }
+
+
+    /* =====================================================
+       SUBHEADINGS
+       ===================================================== */
+
+    h1, h2, h3, h4 {
+        color: #581C87 !important;
+        font-weight: 800 !important;
+    }
+
+
+    /* =====================================================
+       USERNAME / PASSWORD LABELS
+       ===================================================== */
+
+    div[data-testid="stTextInput"] label {
+        color: #24143D !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
     div[data-testid="stTextInput"] label p {
         color: #24143D !important;
-        font-weight: 700 !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
     }
 
-    /* Input boxes */
+
+    /* =====================================================
+       INPUT BOXES
+       ===================================================== */
+
     div[data-testid="stTextInput"] input {
         background-color: #FFFFFF !important;
         color: #24143D !important;
-        border: 2px solid #C4B5FD !important;
-        border-radius: 10px !important;
+        font-size: 18px !important;
+        font-weight: 600 !important;
+        min-height: 48px !important;
+        border: 2px solid #C084FC !important;
+        border-radius: 12px !important;
     }
 
-    /* Placeholder */
+    div[data-testid="stTextInput"] input:focus {
+        border: 2px solid #7E22CE !important;
+        box-shadow: 0 0 0 2px #E9D5FF !important;
+    }
+
     div[data-testid="stTextInput"] input::placeholder {
-        color: #6B5B7A !important;
+        color: #6B5B73 !important;
+        font-size: 16px !important;
         opacity: 1 !important;
     }
 
-    /* Cards */
+
+    /* =====================================================
+       LOGIN / ACCOUNT / SEGMENTATION BUTTONS
+       ===================================================== */
+
+    .stButton > button {
+        background-color: #7E22CE !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 12px !important;
+        min-height: 54px !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
+    .stButton > button p {
+        color: #FFFFFF !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
+    .stButton > button:hover {
+        background-color: #6B21A8 !important;
+        color: #FFFFFF !important;
+    }
+
+
+    /* =====================================================
+       TABS
+       ===================================================== */
+
+    button[data-baseweb="tab"] {
+        color: #581C87 !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
+
+    /* =====================================================
+       FEATURE CARDS
+       ===================================================== */
+
     .card {
-        background: #FFFFFF;
-        padding: 22px;
+        background: #FFF7FB;
+        padding: 24px;
         border-radius: 18px;
-        border: 2px solid #DDD6FE;
+        border: 2px solid #F0ABFC;
         margin-bottom: 15px;
-        box-shadow: 0 4px 12px rgba(76, 29, 149, 0.08);
+        min-height: 150px;
+        box-shadow: 0 5px 15px rgba(88, 28, 135, 0.10);
     }
 
     .card h2 {
-        color: #4C1D95 !important;
+        color: #581C87 !important;
+        font-size: 24px !important;
     }
 
     .card p {
-        color: #3B3150 !important;
+        color: #3B234D !important;
+        font-size: 17px !important;
     }
 
-    /* Offer cards */
+
+    /* =====================================================
+       OFFER CARDS
+       ===================================================== */
+
     .offer {
-        background: #FFFFFF;
-        padding: 20px;
-        border-radius: 15px;
-        border: 2px solid #C4B5FD;
-        margin-bottom: 15px;
-        box-shadow: 0 4px 12px rgba(76, 29, 149, 0.08);
+        background: #FFF7FB;
+        padding: 22px;
+        border-radius: 16px;
+        border: 2px solid #F0ABFC;
+        margin-bottom: 18px;
+        box-shadow: 0 5px 15px rgba(88, 28, 135, 0.10);
     }
 
     .offer h3 {
-        color: #5B21B6 !important;
+        color: #6B21A8 !important;
+        font-size: 24px !important;
     }
 
     .offer p,
     .offer b {
-        color: #312E3A !important;
+        color: #24143D !important;
+        font-size: 17px !important;
     }
 
-    /* Buttons */
-    .stButton > button {
-        background-color: #6D28D9 !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 10px !important;
-        font-weight: 700 !important;
-    }
 
-    .stButton > button:hover {
-        background-color: #5B21B6 !important;
-        color: #FFFFFF !important;
-    }
+    /* =====================================================
+       FILE UPLOADER
+       ===================================================== */
 
-    /* Tabs */
-    button[data-baseweb="tab"] {
-        color: #4C1D95 !important;
-        font-weight: 700 !important;
-    }
-
-    /* File uploader */
     section[data-testid="stFileUploaderDropzone"] {
-        background: #FFFFFF !important;
-        border: 2px dashed #A78BFA !important;
-        border-radius: 12px !important;
+        background: #FFF7FB !important;
+        border: 2px dashed #C084FC !important;
+        border-radius: 14px !important;
     }
 
-    /* Dataframes */
+
+    /* =====================================================
+       DATAFRAME
+       ===================================================== */
+
     div[data-testid="stDataFrame"] {
-        border: 2px solid #DDD6FE;
-        border-radius: 10px;
+        border: 2px solid #E9D5FF;
+        border-radius: 12px;
     }
 
-    /* Download button */
+
+    /* =====================================================
+       DOWNLOAD BUTTON
+       ===================================================== */
+
     .stDownloadButton > button {
-        background-color: #6D28D9 !important;
+        background-color: #7E22CE !important;
         color: #FFFFFF !important;
-        border-radius: 10px !important;
-        font-weight: 700 !important;
+        border-radius: 12px !important;
+        min-height: 54px !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
+    .stDownloadButton > button p {
+        color: #FFFFFF !important;
+        font-size: 18px !important;
+        font-weight: 800 !important;
+    }
+
+
+    /* =====================================================
+       ALERT TEXT
+       ===================================================== */
+
+    .stAlert p {
+        font-size: 16px !important;
+        font-weight: 600 !important;
     }
 
     </style>
@@ -634,361 +753,4 @@ else:
                 else:
 
                     # =====================================
-                    # K-MEANS
-                    # =====================================
-
-                    model = KMeans(
-                        n_clusters=4,
-                        random_state=42,
-                        n_init=10
-                    )
-
-                    cluster_numbers = model.fit_predict(
-                        valid_data
-                    )
-
-
-                    # =====================================
-                    # GROUP ASSIGNMENT
-                    # =====================================
-
-                    df["Customer Group"] = "Not Available"
-
-                    for index, cluster in zip(
-                        valid_data.index,
-                        cluster_numbers
-                    ):
-
-                        df.at[
-                            index,
-                            "Customer Group"
-                        ] = (
-                            "Group "
-                            + str(cluster + 1)
-                        )
-
-
-                    st.success(
-                        "🎉 Customer segmentation completed successfully!"
-                    )
-
-
-                    # =====================================
-                    # RESULTS
-                    # =====================================
-
-                    st.subheader(
-                        "👥 Customer Groups"
-                    )
-
-                    st.dataframe(
-                        df,
-                        use_container_width=True
-                    )
-
-
-                    # =====================================
-                    # CENTERS
-                    # =====================================
-
-                    centers = model.cluster_centers_
-
-                    average_income = valid_data[
-                        "Income_Value"
-                    ].mean()
-
-                    average_spending = valid_data[
-                        "Spending_Value"
-                    ].mean()
-
-
-                    # =====================================
-                    # SUMMARY
-                    # =====================================
-
-                    st.subheader(
-                        "📊 Customer Group Summary"
-                    )
-
-                    summary_data = []
-
-                    for cluster in range(4):
-
-                        income = centers[
-                            cluster
-                        ][0]
-
-                        spending = centers[
-                            cluster
-                        ][1]
-
-                        count = (
-                            cluster_numbers == cluster
-                        ).sum()
-
-                        summary_data.append(
-                            {
-                                "Group":
-                                    "Group "
-                                    + str(cluster + 1),
-
-                                "Customers":
-                                    int(count),
-
-                                "Avg Income":
-                                    round(
-                                        income,
-                                        2
-                                    ),
-
-                                "Avg Spending Score":
-                                    round(
-                                        spending,
-                                        2
-                                    )
-                            }
-                        )
-
-
-                    summary_df = pd.DataFrame(
-                        summary_data
-                    )
-
-                    st.dataframe(
-                        summary_df,
-                        use_container_width=True
-                    )
-
-
-                    # =====================================
-                    # BAR CHART
-                    # =====================================
-
-                    st.subheader(
-                        "📈 Customers in Each Group"
-                    )
-
-                    chart_data = summary_df[
-                        [
-                            "Group",
-                            "Customers"
-                        ]
-                    ].set_index("Group")
-
-                    st.bar_chart(
-                        chart_data
-                    )
-
-
-                    st.markdown("---")
-
-
-                    # =====================================
-                    # FIND CUSTOMER TYPES
-                    # =====================================
-
-                    vip_group = None
-                    potential_group = None
-                    deal_group = None
-                    growth_group = None
-
-
-                    for cluster in range(4):
-
-                        income = centers[
-                            cluster
-                        ][0]
-
-                        spending = centers[
-                            cluster
-                        ][1]
-
-                        group_name = (
-                            "Group "
-                            + str(cluster + 1)
-                        )
-
-
-                        if (
-                            income >= average_income
-                            and
-                            spending >= average_spending
-                        ):
-
-                            vip_group = group_name
-
-                        elif (
-                            income >= average_income
-                            and
-                            spending < average_spending
-                        ):
-
-                            potential_group = group_name
-
-                        elif (
-                            income < average_income
-                            and
-                            spending >= average_spending
-                        ):
-
-                            deal_group = group_name
-
-                        else:
-
-                            growth_group = group_name
-
-
-                    # =====================================
-                    # SMART OFFERS
-                    # =====================================
-
-                    st.subheader(
-                        "🤖 Smart Customer Insights"
-                    )
-
-                    st.subheader(
-                        "💡 Smart Offers & Marketing Ideas"
-                    )
-
-
-                    if vip_group is not None:
-
-                        st.markdown(
-                            """
-                            <div class="offer">
-                            <h3>💎 VIP Champions</h3>
-                            <p>
-                            High income and high spending customers.
-                            </p>
-                            <b>🎁 Offer:</b>
-                            Premium products, loyalty rewards
-                            and exclusive early access.
-                            <br><br>
-                            <b>📢 Strategy:</b>
-                            Build long-term customer loyalty.
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-
-                    if potential_group is not None:
-
-                        st.markdown(
-                            """
-                            <div class="offer">
-                            <h3>🌟 Hidden Potential</h3>
-                            <p>
-                            High income but lower spending customers.
-                            </p>
-                            <b>🎁 Offer:</b>
-                            Personalised discounts,
-                            recommendations and trial offers.
-                            <br><br>
-                            <b>📢 Strategy:</b>
-                            Encourage more frequent purchases.
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-
-                    if deal_group is not None:
-
-                        st.markdown(
-                            """
-                            <div class="offer">
-                            <h3>🔥 Deal Lovers</h3>
-                            <p>
-                            Lower income but active spending customers.
-                            </p>
-                            <b>🎁 Offer:</b>
-                            Bundle deals, value packs
-                            and limited-time offers.
-                            <br><br>
-                            <b>📢 Strategy:</b>
-                            Reward their engagement.
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-
-                    if growth_group is not None:
-
-                        st.markdown(
-                            """
-                            <div class="offer">
-                            <h3>🌱 Growth Customers</h3>
-                            <p>
-                            Lower income and lower spending customers.
-                            </p>
-                            <b>🎁 Offer:</b>
-                            Welcome offers, affordable bundles
-                            and first-purchase incentives.
-                            <br><br>
-                            <b>📢 Strategy:</b>
-                            Encourage first and repeat purchases.
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
-
-
-                    # =====================================
-                    # DOWNLOAD
-                    # =====================================
-
-                    st.markdown("---")
-
-                    st.subheader(
-                        "📥 Download Segmented Customer Report"
-                    )
-
-                    download_df = df.drop(
-                        columns=[
-                            "Income_Value",
-                            "Spending_Value"
-                        ]
-                    )
-
-                    csv_data = download_df.to_csv(
-                        index=False
-                    ).encode("utf-8")
-
-                    st.download_button(
-                        label="📥 Download CSV Report",
-                        data=csv_data,
-                        file_name="customer_segments.csv",
-                        mime="text/csv",
-                        use_container_width=True
-                    )
-
-
-        else:
-
-            st.error(
-                "❌ Annual Income or Spending Score "
-                "column was not found."
-            )
-
-            st.write(
-                "Columns found in your CSV:"
-            )
-
-            st.write(
-                list(df.columns)
-            )
-
-
-    # =====================================================
-    # LOGOUT
-    # =====================================================
-
-    st.markdown("---")
-
-    if st.button("🚪 Logout"):
-
-        st.session_state.logged_in = False
-
-        st.rerun()
+                    # K-M
